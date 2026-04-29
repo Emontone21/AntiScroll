@@ -1,26 +1,312 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Notion-style design tokens.
+   - Light mode lives on :root.
+   - Dark mode is applied by adding .dark to <html> (see ThemeProvider).
+   - All colors here are exposed to Tailwind v4 utilities via the @theme
+     block below as `--color-*` so utilities like `bg-bg-primary`,
+     `text-text-primary`, `bg-accent-primary-soft` work and react to .dark
+     because they reference the cascading CSS variables.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-inter: 'Inter', sans-serif;
+
+  /* Neutrals */
+  --bg-primary: #FBFBFA;
+  --bg-secondary: #F7F6F3;
+  --bg-tertiary: #F1F1EF;
+  --border: #E9E9E7;
+  --border-strong: #D3D1CB;
+  --text-primary: #37352F;
+  --text-secondary: #787774;
+  --text-tertiary: #9B9A97;
+
+  /* Chalk accents - main + soft tint */
+  --accent-primary: #6940A5;
+  --accent-primary-soft: #F4F0F8;
+  --accent-success: #0F7B6C;
+  --accent-success-soft: #EDF3EC;
+  --accent-warning: #DFAB01;
+  --accent-warning-soft: #FBF3DB;
+  --accent-error: #E03E3E;
+  --accent-error-soft: #FDEBEC;
+  --accent-info: #0B6E99;
+  --accent-info-soft: #E7F3F8;
 }
 
+html.dark {
+  /* Neutrals */
+  --bg-primary: #191919;
+  --bg-secondary: #202020;
+  --bg-tertiary: #2F2F2F;
+  --border: #2F2F2F;
+  --border-strong: #3F3F3F;
+  --text-primary: #E6E6E4;
+  --text-secondary: #9B9B9B;
+  --text-tertiary: #6E6E6E;
+
+  /* Chalk accents */
+  --accent-primary: #9A6DD7;
+  --accent-primary-soft: #3D2E5C;
+  --accent-success: #4DAB9A;
+  --accent-success-soft: #243A35;
+  --accent-warning: #FFDC49;
+  --accent-warning-soft: #3E3825;
+  --accent-error: #FF7369;
+  --accent-error-soft: #3E2828;
+  --accent-info: #529CCA;
+  --accent-info-soft: #1F3A4D;
+}
+
+/* Expose tokens to Tailwind v4. The values reference the cascading vars,
+   so utilities react automatically to the .dark class on <html>. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-primary-soft: var(--accent-primary-soft);
+  --color-accent-success: var(--accent-success);
+  --color-accent-success-soft: var(--accent-success-soft);
+  --color-accent-warning: var(--accent-warning);
+  --color-accent-warning-soft: var(--accent-warning-soft);
+  --color-accent-error: var(--accent-error);
+  --color-accent-error-soft: var(--accent-error-soft);
+  --color-accent-info: var(--accent-info);
+  --color-accent-info-soft: var(--accent-info-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Fuente: Inter primero, luego sistema iOS (SF Pro) como fallback */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  /* iOS: scrolling con inercia nativo */
+  -webkit-overflow-scrolling: touch;
+  /* Prevenir bounce del body — el scroll debe estar en los contenedores */
+  overscroll-behavior: none;
+  /* Prevenir selección accidental de texto al hacer tap largo */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Eliminar highlight azul al tocar elementos */
+  -webkit-tap-highlight-color: transparent;
+  /* Eliminar delay de 300ms en clicks (legacy iOS) */
+  touch-action: manipulation;
+}
+
+/* Permitir selección de texto solo en contenido de lecciones */
+.prose-lesson,
+.prose-lesson * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Fix inputs en iOS: evitar zoom automático al hacer foco (requiere ≥16px) */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+/* Eliminar outline en focus para touch (iOS no lo necesita) */
+*:focus {
+  outline: none;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Scrolling containers ─────────────────────────────────────────────────── */
+
+/* Todos los contenedores scrolleables deben tener esto */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* ─── iOS Safe Areas ───────────────────────────────────────────────────────── */
+
+:root {
+  /* Fallbacks para cuando las variables del sistema no están disponibles */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* Safe area padding helpers (usados donde no se puede inline style) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ─── Touch targets ────────────────────────────────────────────────────────── */
+
+/* iOS Human Interface Guidelines: mínimo 44×44pt para elementos interactivos */
+button, a, [role="button"] {
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Eliminar delay de 300ms en clicks en todos los elementos */
+* {
+  touch-action: manipulation;
+}
+
+/* ─── Feedback táctil inmediato ────────────────────────────────────────────── */
+
+/* En iOS no hay hover, pero el :active debe ser inmediato y visible */
+button:active,
+a:active,
+[role="button"]:active {
+  opacity: 0.6;
+  transform: scale(0.97);
+  transition: opacity 0.05s, transform 0.05s;
+}
+
+/* Cards interactivas — feedback de toque */
+.interactive-card:active {
+  background-color: var(--bg-tertiary) !important;
+  transition: background-color 0.05s;
+}
+
+/* ==========================================================================
+   Prose lesson content. Theming is driven entirely by the cascading CSS
+   variables above; no .dark overrides necessary because the variables
+   themselves change under html.dark.
+   ========================================================================== */
+.prose-lesson {
+  color: var(--text-primary);
+  line-height: 1.75;
+  /* Texto de lección siempre ≥16px para legibilidad en móvil */
+  font-size: 1rem;
+}
+
+.prose-lesson h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.prose-lesson h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.prose-lesson h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 0.75rem;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.prose-lesson p {
+  color: var(--text-primary);
+  line-height: 1.75;
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.prose-lesson span {
+  color: var(--text-primary);
+}
+
+.prose-lesson strong {
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.prose-lesson a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.prose-lesson ul,
+.prose-lesson ol {
+  margin: 0.75rem 0;
+  display: block;
+}
+
+.prose-lesson li {
+  display: flex;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.prose-lesson .bullet {
+  color: var(--accent-primary);
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+/* Dark mode: mayor especificidad para ganar a los estilos base de Tailwind */
+.dark .prose-lesson h2,
+.dark .prose-lesson h3,
+.dark .prose-lesson h4 {
+  color: #f9fafb;
+}
+
+/* ==========================================================================
+   Animation utilities.
+   ========================================================================== */
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-fill-mode: both;
+}
+
+.zoom-in-95 {
+  animation-name: zoom-in;
+}
+
+/* Learning path — pulse for the current unlocked node */
+@keyframes path-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.1); opacity: 0.72; }
+}
+
+.path-pulse {
+  animation: path-pulse 2s ease-in-out infinite;
 }
