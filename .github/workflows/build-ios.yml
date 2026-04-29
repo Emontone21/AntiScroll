@@ -29,13 +29,21 @@ jobs:
         env:
           NEXT_EXPORT: 'true'
 
-      - name: Install CocoaPods dependencies
+      - name: Add iOS platform (if missing)
+        # The ios/ folder is not committed to the repo. Generate it on CI.
+        # `cap add ios` scaffolds ios/App and runs pod install internally.
+        run: |
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+
+      - name: Sync Capacitor (copies web build + runs pod install)
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies (ensure up-to-date)
         run: |
           cd ios/App
           pod install --repo-update
-
-      - name: Sync Capacitor
-        run: npx cap sync ios
 
       - name: Build unsigned IPA
         run: |
